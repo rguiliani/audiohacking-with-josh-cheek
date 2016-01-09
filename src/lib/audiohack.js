@@ -1,3 +1,5 @@
+window.oscillators = [];
+
 var AudioContext = window.AudioContext || window.webkitAudioContext;
 var context      = new AudioContext();
 var destination  = context.destination;
@@ -7,12 +9,12 @@ chords = [
     [440,550,660]
 ];
 
-
 // osc (modified by periodic wave) -> gain -> convolver  -> speakers (aka context.destination)
 chords.forEach(function(freqs) {
     freqs.forEach(function(freq) {
         // osc
         var oscillator = context.createOscillator();
+        window.oscillators.push(oscillator);
 
         // periodic wave
         // var real = new Float32Array(2);
