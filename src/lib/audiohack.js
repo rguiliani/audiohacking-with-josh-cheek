@@ -1,10 +1,9 @@
-function Oscillator (frequency) {
     var AudioContext = window.AudioContext || window.webkitAudioContext;
     var context = new AudioContext();
-    var destination = context.destination;
+
+function Oscillator (frequency, destination) {
     var oscillator = this.oscillator = context.createOscillator();
     var gain = context.createGain();
-    var convolver = context.createConvolver(); //node i/o
     var volume = this.volume = gain.gain;
 
     oscillator.frequency.value = frequency;
@@ -12,7 +11,6 @@ function Oscillator (frequency) {
 
     oscillator.connect(gain);
     gain.connect(destination);
-    //convolver.connect(destination);
 
     oscillator.start(0);
 
@@ -20,6 +18,21 @@ function Oscillator (frequency) {
     this.stop = function() { this.volume.value = 0; };
 };
 
+function Convolver(input, output) {
+    this.convolver = context.createConvolver(); //node i/o
+    input.connect(this.convolver);
+    this.convolver.connect(output);
+}
+
+function PeriodicWave (osc) {
+    real[0] = 0;
+    imag[0] = 0;
+    real[1] = 1;
+    imag[1] = 0;
+
+    var wave = context.createPeriodicWave(real, imag, {disableNormalization: true});
+    osc.setPeriodicWave(wave);
+}
 chords = [
 //    [448,560,672],
     [440,550,660]
@@ -27,9 +40,11 @@ chords = [
 
 chords.forEach(function(freqs) {
     freqs.forEach(function(freq) {
-    osc = new Oscillator(freq);
+        var osc = new Oscillator(freq);
+        Convolver(osc, context.destination);
+        PeriodicWave(osc)
 
-    osc.start();
+        osc.start();
     });
 });
 
